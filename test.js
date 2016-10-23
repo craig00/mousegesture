@@ -22,29 +22,33 @@ function getellipse(x1,y1,x2,y2){
 	bluediv.style.transform="rotate("+  (deg<0?(180 + deg):(deg)) +"deg)";
 	return bluediv;
 }
+var points = new Set();
+var x=null,y=null;
+var PREVENTD = false;
+var cancelcontextmenu = 0;
+var mousemovepoints = 3;
 window.onload = ()=>{
-	var painting = document.createElement("div");
-	painting.style.zIndex = '-100';
-	document.getElementsByTagName("body")[0].appendChild(painting);
-	var x=null,y=null;
 
-	var PREVENTD = false;
 	window.addEventListener('mousemove',(e)=>{
-		if (e.button === 2) {
+		if (e.button === 2 && cancelcontextmenu++ > mousemovepoints) {
 			PREVENTD = true;
 
 			var newone = getellipse(e.clientX,e.clientY,x,y);
+			document.body.appendChild(newone);
 			x=e.clientX;
 			y=e.clientY;
-			painting.appendChild(newone);
+			points.add(newone);
 		}
 		
 	},true);
 	window.addEventListener('contextmenu',(e)=>{
-		if (e.button === 2 && PREVENTD) {
+		if (e.button === 2 && PREVENTD && cancelcontextmenu > mousemovepoints) {
 			PREVENTD = false;
 			e.preventDefault();
-			painting.innerHTML = ' ';
+			points.forEach((c)=>{
+				document.body.removeChild(c);
+			})
+			points.clear();
 			x=null;
 			y=null;
 		}

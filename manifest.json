@@ -5,8 +5,9 @@
 	"description": "The first extension that I made.", 
 	"content_scripts":[
 	{
-		"matches": ["http://*/", "https://*/"],
-		"js":["test.js"]
+		"matches": ["http://*/*", "https://*/*"],
+		"js":["test.js"],
+		"run_at":"document_end"
 	}
 	]
 	
