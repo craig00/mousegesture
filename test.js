@@ -23,14 +23,14 @@ function getellipse(x1,y1,x2,y2){
 	}
 	var bluediv = document.createElement("div");
 	var rectanglewidth = Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
-	bluediv.style.width = rectanglewidth+2+'px';
-	bluediv.style.height = '2px';
-	bluediv.style.borderRadius = '1px';
+	bluediv.style.width = rectanglewidth+lineweight/2+'px';
+	bluediv.style.height = lineweight+'px';
+	bluediv.style.borderRadius = lineweight/2+'px';
 	bluediv.style.backgroundColor = 'blue';
 	bluediv.style.position = 'fixed';
 	bluediv.style.zIndex = '10000';
-	bluediv.style.top = ( (y1+y2)/2 - 1) +"px";
-	bluediv.style.left = ( (x1+x2)/2 - rectanglewidth/2 - 1) +"px";
+	bluediv.style.top = ( (y1+y2)/2 - lineweight/2) +"px";
+	bluediv.style.left = ( (x1+x2)/2 - rectanglewidth/2 - lineweight/2) +"px";
 	if (x1==x2) {
 		var deg = 90;
 	}else{
@@ -40,79 +40,92 @@ function getellipse(x1,y1,x2,y2){
 	bluediv.style.transform="rotate("+  (deg<0?(180 + deg):(deg)) +"deg)";
 	return bluediv;
 }
+function checkaction(actioncache){
+	var index = actioncache[0];
+	return actioncache.every((element)=>{
+		return element==index;
+	});
+}
 var points = new Set();
 var x=null,y=null;
 var PREVENTD = false;
 var cancelcontextmenu = 0;
 var mousemovepoints = 3;
 var action = [];
-window.onload = ()=>{
-
-	window.addEventListener('mousemove',(e)=>{
-		if (e.button === 2 ) {
-			if (cancelcontextmenu++ > mousemovepoints) {
-				PREVENTD = true;
-				var oneway = onedirection(x,y,e.clientX,e.clientY);
-				if (oneway == 'meaningless') {
+var pointscache = 3;
+var actioncache = new Array(pointscache);
+var lineweight = 2;
+window.addEventListener('mousemove',(e)=>{
+	if (e.button === 2 ) {
+		if (cancelcontextmenu++ > mousemovepoints) {
+			PREVENTD = true;
+			var oneway = onedirection(x,y,e.clientX,e.clientY);
+			actioncache.shift();
+			actioncache.push(oneway);
+			if (checkaction(actioncache)) {
+				if (actioncache[0] == 'meaningless') {
 					action = 'meaningless';
-				}else if (action[action.length-1] != oneway) {
-					action[action.length] = oneway;
-				}
-				var newone = getellipse(x,y,e.clientX,e.clientY);
-				document.body.appendChild(newone);
-				points.add(newone);
-			}
-			x=e.clientX;
-			y=e.clientY;
-		}
-	},true);
-	window.addEventListener('contextmenu',(e)=>{
-		if (e.button === 2 && PREVENTD && cancelcontextmenu > mousemovepoints) {
-			PREVENTD = false;
-			e.preventDefault();
-			if (action.length == 1) {
-				switch(action[action.length-1]){
-					case 'vertical-down':
-					break;
-					case 'vertical-up':
-					break;
-					case 'horizontal-left':
-					history.go(-1);
-					break;
-					case 'horizontal-right':
-					history.go(1);
-					break;
-					default:
-					break;
-				}
-			}else if (action.length == 2) {
-				switch(action[action.length-2]){
-					case 'vertical-down':
-					if (action[action.length-1] == 'horizontal-right') {
-						window.close();
-					}
-					break;
-					case 'vertical-up':
-					break;
-					case 'horizontal-left':
-					break;
-					case 'horizontal-right':
-					if (action[action.length-1] == 'vertical-down') {
-						window.location.reload();
-					}
-					break;
-					default:
-					break;
+				}else if (action[action.length-1] != actioncache[0]) {
+					action[action.length] = actioncache[0];
 				}
 			}
-			action = [];
-			points.forEach((c)=>{
-				document.body.removeChild(c);
-			})
-			points.clear();
-			x=null;
-			y=null;
+			var newone = getellipse(x,y,e.clientX,e.clientY);
+			document.body.appendChild(newone);
+			points.add(newone);
 		}
-		
-	},true);
-}
+		x=e.clientX;
+		y=e.clientY;
+	}
+},true);
+window.addEventListener('contextmenu',(e)=>{
+	if (e.button === 2 && PREVENTD && cancelcontextmenu > mousemovepoints) {
+		cancelcontextmenu = 0;
+		PREVENTD = false;
+		e.preventDefault();
+		if (action.length == 1) {
+			switch(action[action.length-1]){
+				case 'vertical-down':
+				window.scrollBy(0,600);
+				break;
+				case 'vertical-up':
+				window.scrollBy(0,-600);
+				break;
+				case 'horizontal-left':
+				history.go(-1);
+				break;
+				case 'horizontal-right':
+				history.go(1);
+				break;
+				default:
+				break;
+			}
+		}else if (action.length == 2) {
+			switch(action[action.length-2]){
+				case 'vertical-down':
+				if (action[action.length-1] == 'horizontal-right') {
+					chrome.runtime.sendMessage('close the current tab');
+				}
+				break;
+				case 'vertical-up':
+				break;
+				case 'horizontal-left':
+				break;
+				case 'horizontal-right':
+				if (action[action.length-1] == 'vertical-down') {
+					window.location.reload();
+				}
+				break;
+				default:
+				break;
+			}
+		}
+		action = [];
+		points.forEach((c)=>{
+			document.body.removeChild(c);
+		})
+		points.clear();
+		x=null;
+		y=null;
+	}
+
+},true);
