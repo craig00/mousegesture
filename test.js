@@ -1,5 +1,5 @@
 function onedirection(x1,y1,x2,y2){
-	var deg = Math.atan((y1-y2)/(x1-x2)) /(Math.PI)*180;
+	let deg = Math.atan((y1-y2)/(x1-x2)) /(Math.PI)*180;
 	if (Math.abs(deg)<30) {
 		if (x1<x2) {
 			return 'horizontal-right';
@@ -21,8 +21,8 @@ function getellipse(x1,y1,x2,y2){
 		x1 = x2;
 		y1 = y2;
 	}
-	var bluediv = document.createElement("div");
-	var rectanglewidth = Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
+	let bluediv = document.createElement("div");
+	let rectanglewidth = Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
 	bluediv.style.width = rectanglewidth+lineweight/2+'px';
 	bluediv.style.height = lineweight+'px';
 	bluediv.style.borderRadius = lineweight/2+'px';
@@ -32,16 +32,16 @@ function getellipse(x1,y1,x2,y2){
 	bluediv.style.top = ( (y1+y2)/2 - lineweight/2) +"px";
 	bluediv.style.left = ( (x1+x2)/2 - rectanglewidth/2 - lineweight/2) +"px";
 	if (x1==x2) {
-		var deg = 90;
+		let deg = 90;
 	}else{
-		var deg = Math.atan((y1-y2)/(x1-x2)) /(Math.PI)*180;
+		let deg = Math.atan((y1-y2)/(x1-x2)) /(Math.PI)*180;
 	}
 
 	bluediv.style.transform="rotate("+  (deg<0?(180 + deg):(deg)) +"deg)";
 	return bluediv;
 }
 function checkaction(actioncache){
-	var index = actioncache[0];
+	let index = actioncache[0];
 	return actioncache.every((element)=>{
 		return element==index;
 	});
@@ -55,11 +55,16 @@ var action = [];
 var pointscache = 3;
 var actioncache = new Array(pointscache);
 var lineweight = 2;
+var mousemoveforlink = 0;
+var targeturl;
+window.addEventListener('mousedown',(e)=>{
+	targeturl = e.target.href||e.target.parentElement.href;
+});
 window.addEventListener('mousemove',(e)=>{
 	if (e.button === 2 ) {
 		if (cancelcontextmenu++ > mousemovepoints) {
 			PREVENTD = true;
-			var oneway = onedirection(x,y,e.clientX,e.clientY);
+			let oneway = onedirection(x,y,e.clientX,e.clientY);
 			actioncache.shift();
 			actioncache.push(oneway);
 			if (checkaction(actioncache)) {
@@ -69,12 +74,20 @@ window.addEventListener('mousemove',(e)=>{
 					action[action.length] = actioncache[0];
 				}
 			}
-			var newone = getellipse(x,y,e.clientX,e.clientY);
+			let newone = getellipse(x,y,e.clientX,e.clientY);
 			document.body.appendChild(newone);
 			points.add(newone);
 		}
 		x=e.clientX;
 		y=e.clientY;
+	}else if (e.button === 0) {
+		mousemoveforlink++;
+		if ( mousemoveforlink > 3 && targeturl) {
+			let port = chrome.runtime.connect({name:'openatab'});
+			port.postMessage({message:'open a new tab',targeturl:targeturl});
+			mousemoveforlink = 0;
+			targeturl = '';
+		}
 	}
 },true);
 window.addEventListener('contextmenu',(e)=>{
