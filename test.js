@@ -21,6 +21,7 @@ function getellipse(x1,y1,x2,y2){
 		x1 = x2;
 		y1 = y2;
 	}
+	let deg;
 	let bluediv = document.createElement("div");
 	let rectanglewidth = Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
 	bluediv.style.width = rectanglewidth+lineweight/2+'px';
@@ -32,9 +33,9 @@ function getellipse(x1,y1,x2,y2){
 	bluediv.style.top = ( (y1+y2)/2 - lineweight/2) +"px";
 	bluediv.style.left = ( (x1+x2)/2 - rectanglewidth/2 - lineweight/2) +"px";
 	if (x1==x2) {
-		let deg = 90;
+		deg = 90;
 	}else{
-		let deg = Math.atan((y1-y2)/(x1-x2)) /(Math.PI)*180;
+		deg = Math.atan((y1-y2)/(x1-x2)) /(Math.PI)*180;
 	}
 
 	bluediv.style.transform="rotate("+  (deg<0?(180 + deg):(deg)) +"deg)";
