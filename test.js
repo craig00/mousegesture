@@ -82,12 +82,12 @@ window.addEventListener('mousemove',(e)=>{
 		y=e.clientY;
 	}else if (e.button === 0) {
 		mousemoveforlink++;
-		if ( mousemoveforlink > 3 && targeturl) {
-			let port = chrome.runtime.connect({name:'openatab'});
-			port.postMessage({message:'open a new tab',targeturl:targeturl});
-			mousemoveforlink = 0;
-			targeturl = '';
-		}
+		// if ( mousemoveforlink > 3 && targeturl) {
+		// 	let port = chrome.runtime.connect({name:'openatab'});
+		// 	port.postMessage({message:'open a new tab',targeturl:targeturl});
+		// 	mousemoveforlink = 0;
+		// 	targeturl = '';
+		// }
 	}
 },true);
 window.addEventListener('contextmenu',(e)=>{
